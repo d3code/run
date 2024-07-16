@@ -1,0 +1,7 @@
+go 1.21
+
+use .
+
+replace github.com/d3code/pkg => ../pkg
+
+replace github.com/d3code/clog => ../clog
