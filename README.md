@@ -1,23 +1,23 @@
-# Peep: AutoReload
+# Run: AutoReload
 
-Peep is a command line application that monitors specified directories for file changes and executes
+Run is a command line application that monitors specified directories for file changes and executes
 user-defined commands, facilitating development automation processes. It allows you to automate
 builds, restart programs, and gain insights into command execution through a verbose mode.
 
 ## Installation
 
-To install Peep, follow these steps:
+To install Run, follow these steps:
 
 1. Clone the repository:
 
    ```bash
-   git clone git@github.com:d3code/peep.git
+   git clone git@github.com:d3code/run.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd peep
+   cd run
    ```
 
 3. Build and install the application:
@@ -46,14 +46,14 @@ available flags:
 Monitor the current directory with verbose output and run a build command on file changes:
 
 ```bash
-peep -v -r "go run main.go"
+run -v -r "go run main.go"
 ```
 
 Monitor `.go` files in the current and another directory, ignore `.git`, `.idea` and `bin` folders,
 and run a custom command:
 
 ```bash
-peep \
+run \
   -d . \
   -d ../other-module \
   -e ".go" \
@@ -70,7 +70,7 @@ the order they are specified.
 > Note: The configuration file feature is currently not implemented.
 
 You can also use a configuration file to specify the directories and commands to run. The
-configuration file must be named `peep.yaml` and placed in the directory you want to monitor. Here's
+configuration file must be named `run.yaml` and placed in the directory you want to monitor. Here's
 an example configuration file:
 
 ```yaml
@@ -90,7 +90,7 @@ commands:
 
 ## Contributing
 
-Contributions to Peep are welcome! If you'd like to contribute, please follow the guidelines
+Contributions to Run are welcome! If you'd like to contribute, please follow the guidelines
 mentioned in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## License
