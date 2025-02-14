@@ -1,63 +1,67 @@
 package process
 
 import (
-    "github.com/d3code/clog"
-    "os/exec"
-    "sync"
-    "syscall"
+	"github.com/d3code/xlog"
+	"os/exec"
+	"sync"
+	"syscall"
 )
 
 var (
-    RunningProcesses      []*exec.Cmd
-    RunningProcessesMutex = sync.Mutex{}
+	runningProcesses      []*exec.Cmd
+	runningProcessesMutex = sync.Mutex{}
 )
 
 func AddProcess(process *exec.Cmd) {
-    RunningProcessesMutex.Lock()
-    defer RunningProcessesMutex.Unlock()
+	runningProcessesMutex.Lock()
+	defer runningProcessesMutex.Unlock()
 
-    RunningProcesses = append(RunningProcesses, process)
+	runningProcesses = append(runningProcesses, process)
 }
 
 func KillAllProcessGroups() {
-    RunningProcessesMutex.Lock()
-    defer RunningProcessesMutex.Unlock()
+	runningProcessesMutex.Lock()
+	defer runningProcessesMutex.Unlock()
 
-    clog.Infof("Killing %v processes", len(RunningProcesses))
+	if len(runningProcesses) == 0 {
+		return
+	}
 
-    for _, process := range RunningProcesses {
-        if process == nil || process.Process == nil {
-            continue
-        }
+	xlog.Infof("Killing %v processes", len(runningProcesses))
 
-        processGroupId, err := syscall.Getpgid(process.Process.Pid)
-        if err != nil {
-            clog.Debugf("no process group for pid [ %v ]: %v", process.Process.Pid, err)
-            continue
-        }
+	for _, process := range runningProcesses {
+		if process == nil || process.Process == nil {
+			continue
+		}
 
-        clog.Debugf("killing process group [ %v ]", processGroupId)
-        err = syscall.Kill(-processGroupId, syscall.SIGTERM)
-        if err != nil {
-            clog.Error(err.Error())
-        }
+		processGroupId, err := syscall.Getpgid(process.Process.Pid)
+		if err != nil {
+			xlog.Debugf("no process group for pid [ %v ]: %v", process.Process.Pid, err)
+			continue
+		}
 
-        // Wait for process to exit
-        err = process.Wait()
-        if err != nil {
-            clog.Debug(err.Error())
-        }
-    }
+		xlog.Debugf("killing process group [ %v ]", processGroupId)
+		err = syscall.Kill(-processGroupId, syscall.SIGTERM)
+		if err != nil {
+			xlog.Error(err.Error())
+		}
 
-    RunningProcesses = nil
+		// Wait for process to exit
+		err = process.Wait()
+		if err != nil {
+			xlog.Debug(err.Error())
+		}
+	}
+
+	runningProcesses = nil
 }
 
 func RemoveProcess(process *exec.Cmd) {
-    RunningProcessesMutex.Lock()
-    defer RunningProcessesMutex.Unlock()
-    for i, p := range RunningProcesses {
-        if p == process {
-            RunningProcesses = append(RunningProcesses[:i], RunningProcesses[i+1:]...)
-        }
-    }
+	runningProcessesMutex.Lock()
+	defer runningProcessesMutex.Unlock()
+	for i, p := range runningProcesses {
+		if p == process {
+			runningProcesses = append(runningProcesses[:i], runningProcesses[i+1:]...)
+		}
+	}
 }

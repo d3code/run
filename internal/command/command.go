@@ -1,50 +1,54 @@
 package command
 
 import (
-    "fmt"
-    "github.com/d3code/clog"
-    "github.com/d3code/go-reload/internal/cfg"
-    "github.com/d3code/go-reload/internal/process"
-    "os"
-    "os/exec"
-    "syscall"
+	"fmt"
+	"github.com/d3code/run/internal/cfg"
+	"github.com/d3code/run/internal/process"
+	"github.com/d3code/xlog"
+	"os"
+	"os/exec"
+	"syscall"
 )
 
 func Command(commandCh chan bool, errorCh chan error) {
-    for {
-        select {
-        case <-commandCh:
+	for {
+		select {
+		case <-commandCh:
 
-            clog.Infof("\n{{ Restarting... | green }}")
+			if len(cfg.Config.Run) == 0 {
+				xlog.Fatalf("no command(s) specified")
+				return
+			}
 
-            // Checking if any process is running
-            process.KillAllProcessGroups()
+			xlog.Infof("Restarting...")
 
-            // Execute commands
-            for _, x := range cfg.Config.Run {
-                go ExecuteCommand(x, errorCh)
-            }
-        }
-    }
+			process.KillAllProcessGroups()
+
+			// Execute commands
+			for _, x := range cfg.Config.Run {
+				go ExecuteCommand(x, errorCh)
+			}
+		}
+	}
 }
 
 func ExecuteCommand(build string, errors chan error) {
-    if len(cfg.Config.Run) == 0 {
-        clog.Debug("no build command specified")
-        return
-    }
+	if len(cfg.Config.Run) == 0 {
+		xlog.Debug("no build command specified")
+		return
+	}
 
-    build = fmt.Sprintf("(%s)", build)
+	build = fmt.Sprintf("(%s)", build)
 
-    c := exec.Command("sh", "-c", build)
-    c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-    c.Stdout = os.Stdout
-    c.Stderr = os.Stderr
+	c := exec.Command("sh", "-c", build)
+	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
 
-    process.AddProcess(c)
+	process.AddProcess(c)
 
-    err := c.Start()
-    if err != nil {
-        clog.Warn(err.Error())
-    }
+	err := c.Start()
+	if err != nil {
+		xlog.Warn(err.Error())
+	}
 }
