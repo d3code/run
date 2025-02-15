@@ -9,9 +9,24 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func Watch(watcher *fsnotify.Watcher, build chan bool, errors chan error) {
+	var changes bool
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for range ticker.C {
+			if changes {
+				xlog.Debug("Changes detected")
+				build <- true
+				changes = false
+			}
+		}
+	}()
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:
@@ -24,17 +39,18 @@ func Watch(watcher *fsnotify.Watcher, build chan bool, errors chan error) {
 				continue
 			}
 
-			AddFolderToWatcher(event, watcher)
+			AddCreatedDirectory(event, watcher)
 
 			for _, x := range cfg.Config.Extension {
 				if strings.HasSuffix(event.Name, x) {
 					xlog.Debug(event.String())
-					build <- true
+					changes = true
 				}
 			}
 		case errWatcher, ok := <-watcher.Errors:
 			if !ok {
 				errors <- fmt.Errorf("watcher error")
+				continue
 			}
 			if errWatcher != nil {
 				errors <- fmt.Errorf("watcher error: %s", errWatcher.Error())
@@ -43,13 +59,18 @@ func Watch(watcher *fsnotify.Watcher, build chan bool, errors chan error) {
 	}
 }
 
-func AddFolderToWatcher(event fsnotify.Event, watcher *fsnotify.Watcher) {
+// AddCreatedDirectory adds a directory to the watcher if it was created
+func AddCreatedDirectory(event fsnotify.Event, watcher *fsnotify.Watcher) {
 	if event.Op&fsnotify.Create == fsnotify.Create {
-		info, errCreate := os.Stat(event.Name)
-		if info != nil && info.IsDir() {
-			errCreate = watcher.Add(event.Name)
-			if errCreate != nil {
-				xlog.Error(errCreate.Error())
+		info, err := os.Stat(event.Name)
+		if err != nil {
+			xlog.Error(err.Error())
+			return
+		}
+		if info.IsDir() {
+			err = watcher.Add(event.Name)
+			if err != nil {
+				xlog.Error(err.Error())
 			} else {
 				xlog.Infof("Watching directory: %s", event.Name)
 			}
@@ -57,35 +78,40 @@ func AddFolderToWatcher(event fsnotify.Event, watcher *fsnotify.Watcher) {
 	}
 }
 
-func AddDirectory(dir string, watcher *fsnotify.Watcher) error {
+// SetWatchDirectory walks through a directory and adds all subdirectories to the watcher
+func SetWatchDirectory(dir string, watcher *fsnotify.Watcher) error {
 	fn := func(p string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			parts := strings.Split(p, string(os.PathSeparator))
-			shouldIgnore := false
-			for _, part := range parts {
-				for _, ignoreDirectory := range cfg.Config.Ignore {
-					if part == ignoreDirectory {
-						shouldIgnore = true
-						break
-					}
-				}
-			}
-
-			if !shouldIgnore {
-				if cfg.Config.Verbose {
-					xlog.Infof("{{ Watching directory | grey }} {{ %s | blue }}", p)
-				}
-				errWatch := watcher.Add(p)
-				if errWatch != nil {
-					return errWatch
-				}
-			}
+		if err != nil {
+			return err
 		}
+		if d.IsDir() {
+			if shouldIgnore(p) {
+				return nil
+			}
 
+			err = watcher.Add(p)
+			if err != nil {
+				return err
+			}
+
+			xlog.Tracef("Watching directory [%s]", p)
+		}
 		return nil
 	}
 
 	return filepath.WalkDir(dir, fn)
+}
+
+func shouldIgnore(path string) bool {
+	parts := strings.Split(path, string(os.PathSeparator))
+	for _, part := range parts {
+		for _, ignoreDirectory := range cfg.Config.Ignore {
+			if part == ignoreDirectory {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func CloseWatcher(watcher *fsnotify.Watcher) {

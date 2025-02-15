@@ -22,6 +22,6 @@ func main() {
 	}()
 
 	sig := <-cancelChan
-	xlog.Debugf("received signal %s", sig.String())
+	xlog.Warnf("Shutting down due to signal [%v]", sig)
 	process.KillAllProcessGroups()
 }

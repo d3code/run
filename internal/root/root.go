@@ -8,7 +8,6 @@ import (
 	"github.com/d3code/run/internal/process"
 	"github.com/d3code/run/internal/watch"
 	"github.com/d3code/xlog"
-	"github.com/d3code/xlog/color"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 	"os"
@@ -26,7 +25,7 @@ func init() {
 
 var Root = &cobra.Command{
 	Use:  "run",
-	Long: color.Template(embed_text.Root),
+	Long: embed_text.Root,
 	Run:  Run,
 }
 
@@ -51,7 +50,7 @@ func Run(cmd *cobra.Command, args []string) {
 
 	// Add directories to watcher
 	for _, x := range cfg.Config.Directory {
-		err = watch.AddDirectory(x, watcher)
+		err = watch.SetWatchDirectory(x, watcher)
 		if err != nil {
 			xlog.Warn(err.Error())
 		}

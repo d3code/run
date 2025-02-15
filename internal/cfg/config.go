@@ -3,7 +3,6 @@ package cfg
 import (
 	"github.com/d3code/xlog"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 type config struct {
@@ -27,9 +26,11 @@ func GetConfiguration(cmd *cobra.Command) {
 		Port:      flagIntSlice(cmd, "port"),
 	}
 
+	const prefix = "[RUN] "
 	if command.Verbose {
-		xlog.EnableConsole(xlog.LevelTrace, xlog.CallerShort, true)
-		xlog.Info("Verbose mode enabled")
+		xlog.EnableConsole(xlog.LevelTrace, xlog.CallerShort, prefix, true)
+	} else {
+		xlog.EnableConsole(xlog.LevelInfo, xlog.CallerShort, prefix, true)
 	}
 
 	Config = &command
@@ -38,8 +39,7 @@ func GetConfiguration(cmd *cobra.Command) {
 func flagBool(cmd *cobra.Command, flag string) bool {
 	value, err := cmd.Flags().GetBool(flag)
 	if err != nil {
-		xlog.Errorf("error parsing flag [ %s ]: %s", flag, err.Error())
-		os.Exit(1)
+		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }
@@ -47,8 +47,7 @@ func flagBool(cmd *cobra.Command, flag string) bool {
 func flagStringSlice(cmd *cobra.Command, flag string) []string {
 	value, err := cmd.Flags().GetStringSlice(flag)
 	if err != nil {
-		xlog.Errorf("error parsing flag [ %s ]: %s", flag, err.Error())
-		os.Exit(1)
+		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }
@@ -56,8 +55,7 @@ func flagStringSlice(cmd *cobra.Command, flag string) []string {
 func flagIntSlice(cmd *cobra.Command, flag string) []int {
 	value, err := cmd.Flags().GetIntSlice(flag)
 	if err != nil {
-		xlog.Errorf("error parsing flag [ %s ]: %s", flag, err.Error())
-		os.Exit(1)
+		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }

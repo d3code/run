@@ -1,11 +1,12 @@
 package process
 
 import (
-	"errors"
 	"fmt"
 	"github.com/d3code/xlog"
 	"os/exec"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -17,18 +18,15 @@ func KillPortProcess(port int) {
 		return
 	}
 
-	if pid == "" {
+	if pid == 0 {
 		xlog.Debugf("No process running on port %v", port)
 		return
 	}
 
 	xlog.Debugf("Process with PID %s running on port %d", pid, port)
-	killCommand := fmt.Sprintf("(kill -9 %s)", pid)
-	kill := exec.Command("sh", "-c", killCommand)
-
-	err = kill.Run()
-	if err != nil {
-		xlog.Errorf("Error killing process: %v", err)
+	err1 := syscall.Kill(pid, syscall.SIGTERM)
+	if err1 != nil {
+		xlog.Errorf("Error killing process: %v", err1)
 		return
 	}
 
@@ -58,35 +56,36 @@ func KillPortProcess(port int) {
 
 }
 
-func isProcessRunning(pid string) (bool, error) {
-	run := exec.Command("sh", "-c", fmt.Sprintf("ps -p %s", pid))
-	o, err := run.Output()
-	if err != nil {
-		// If the error is due to the process not existing, return false without an error
-		var exitError *exec.ExitError
-		if errors.As(err, &exitError) && exitError.ExitCode() == 1 {
-			return false, nil
-		}
-		return false, err
-	}
-
-	// Check if the output contains the PID
-	if strings.Contains(string(o), pid) {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func getPortProcess(port int) (string, error) {
+func getPortProcess(port int) (int, error) {
 	lsofCommand := fmt.Sprintf("(lsof -i :%d | awk 'NR==2 {print $2}')", port)
 	lsof := exec.Command("sh", "-c", lsofCommand)
 
 	o, err := lsof.Output()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	pid := strings.TrimSpace(string(o))
-	return pid, err
+	if pid == "" {
+		return 0, nil
+	}
+
+	num, err := strconv.Atoi(pid)
+
+	return num, err
+}
+
+func getParentPID(pid string) (int, error) {
+	out, err := exec.Command("ps", "-o", "ppid=", "-p", pid).Output()
+	if err != nil {
+		return 0, err
+	}
+
+	ppidStr := strings.TrimSpace(string(out))
+	ppid, err := strconv.Atoi(ppidStr)
+	if err != nil {
+		return 0, err
+	}
+
+	return ppid, nil
 }
