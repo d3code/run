@@ -20,7 +20,7 @@ func init() {
 	Root.Flags().StringSliceP("directory", "d", []string{"."}, "directory to watch")
 	Root.Flags().StringSliceP("extension", "e", []string{"."}, "extension to watch")
 	Root.Flags().StringSliceP("ignore", "i", []string{".git"}, "files or sub-directories to ignore")
-	Root.Flags().StringSliceP("run", "r", []string{}, "command to run and restart on file change")
+	Root.Flags().StringSliceP("command", "c", []string{}, "command to run and restart on file change")
 }
 
 var Root = &cobra.Command{

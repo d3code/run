@@ -23,7 +23,7 @@ func KillPortProcess(port int) {
 		return
 	}
 
-	xlog.Debugf("Process with PID %s running on port %d", pid, port)
+	xlog.Debugf("Process with PID %d running on port %d", pid, port)
 	err1 := syscall.Kill(pid, syscall.SIGTERM)
 	if err1 != nil {
 		xlog.Errorf("Error killing process: %v", err1)
@@ -37,7 +37,7 @@ func KillPortProcess(port int) {
 	for {
 		select {
 		case <-timeout:
-			xlog.Errorf("Timeout waiting for process with PID %s to quit", pid)
+			xlog.Errorf("Timeout waiting for process with PID %d to quit", pid)
 			return
 		case <-tick:
 			// Check if the process is still running
@@ -48,7 +48,7 @@ func KillPortProcess(port int) {
 			}
 
 			if !running {
-				xlog.Infof("Process with PID %s killed", pid)
+				xlog.Infof("Process with PID %d killed", pid)
 				return
 			}
 		}
@@ -60,12 +60,12 @@ func getPortProcess(port int) (int, error) {
 	lsofCommand := fmt.Sprintf("(lsof -i :%d | awk 'NR==2 {print $2}')", port)
 	lsof := exec.Command("sh", "-c", lsofCommand)
 
-	o, err := lsof.Output()
+	output, err := lsof.Output()
 	if err != nil {
 		return 0, err
 	}
 
-	pid := strings.TrimSpace(string(o))
+	pid := strings.TrimSpace(string(output))
 	if pid == "" {
 		return 0, nil
 	}
@@ -73,19 +73,4 @@ func getPortProcess(port int) (int, error) {
 	num, err := strconv.Atoi(pid)
 
 	return num, err
-}
-
-func getParentPID(pid string) (int, error) {
-	out, err := exec.Command("ps", "-o", "ppid=", "-p", pid).Output()
-	if err != nil {
-		return 0, err
-	}
-
-	ppidStr := strings.TrimSpace(string(out))
-	ppid, err := strconv.Atoi(ppidStr)
-	if err != nil {
-		return 0, err
-	}
-
-	return ppid, nil
 }

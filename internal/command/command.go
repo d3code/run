@@ -14,13 +14,13 @@ func Command(commandCh chan bool, errorCh chan error) {
 	for {
 		select {
 		case <-commandCh:
-			if len(cfg.Config.Run) == 0 {
+			if len(cfg.Config.Command) == 0 {
 				xlog.Fatalf("No command(s) specified")
 				return
 			}
 
 			process.KillAllProcessGroups()
-			for _, x := range cfg.Config.Run {
+			for _, x := range cfg.Config.Command {
 				go ExecuteCommand(x, errorCh)
 			}
 		}

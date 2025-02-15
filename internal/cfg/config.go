@@ -10,7 +10,7 @@ type config struct {
 	Directory []string
 	Extension []string
 	Ignore    []string
-	Run       []string
+	Command   []string
 	Port      []int
 }
 
@@ -22,15 +22,15 @@ func GetConfiguration(cmd *cobra.Command) {
 		Directory: flagStringSlice(cmd, "directory"),
 		Extension: flagStringSlice(cmd, "extension"),
 		Ignore:    flagStringSlice(cmd, "ignore"),
-		Run:       flagStringSlice(cmd, "run"),
+		Command:   flagStringSlice(cmd, "command"),
 		Port:      flagIntSlice(cmd, "port"),
 	}
 
-	const prefix = "[RUN] "
+	const prefix = "[RUN]"
 	if command.Verbose {
 		xlog.EnableConsole(xlog.LevelTrace, xlog.CallerShort, prefix, true)
 	} else {
-		xlog.EnableConsole(xlog.LevelInfo, xlog.CallerShort, prefix, true)
+		xlog.EnableConsole(xlog.LevelInfo, xlog.CallerNone, prefix, true)
 	}
 
 	Config = &command
@@ -39,7 +39,7 @@ func GetConfiguration(cmd *cobra.Command) {
 func flagBool(cmd *cobra.Command, flag string) bool {
 	value, err := cmd.Flags().GetBool(flag)
 	if err != nil {
-		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
+		xlog.Fatalf("Error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }
@@ -47,7 +47,7 @@ func flagBool(cmd *cobra.Command, flag string) bool {
 func flagStringSlice(cmd *cobra.Command, flag string) []string {
 	value, err := cmd.Flags().GetStringSlice(flag)
 	if err != nil {
-		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
+		xlog.Fatalf("Error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }
@@ -55,7 +55,7 @@ func flagStringSlice(cmd *cobra.Command, flag string) []string {
 func flagIntSlice(cmd *cobra.Command, flag string) []int {
 	value, err := cmd.Flags().GetIntSlice(flag)
 	if err != nil {
-		xlog.Fatalf("error parsing flag [ %s ]: %s", flag, err)
+		xlog.Fatalf("Error parsing flag [ %s ]: %s", flag, err)
 	}
 	return value
 }
