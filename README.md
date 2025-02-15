@@ -35,18 +35,18 @@ available flags:
 
 - `-d, --directory`: Specify directories to watch (default: current directory).
 
-- `-e, --extension`: Specify extensions to watch (default: all extensions).
+- `-e, --extension`: Specify extensions to watch (default: none).
 
-- `-i, --ignore`: Specify files or sub-directories to ignore (default: .git).
+- `-i, --ignore`: Specify files or sub-directories to ignore (default: `.git` and `.idea` files).
 
 - `-c, --command`: Specify the command to run and restart on file change.
 
 ### Examples
 
-Monitor the current directory with verbose output and run a build command on file changes:
+Monitor `.go` files in the current directory and run `main.go` on changes:
 
 ```bash
-run -v -r "go run main.go"
+run -r "go run main.go" -e .go
 ```
 
 Monitor `.go` files in the current and another directory, ignore `.git`, `.idea` and `bin` folders,
