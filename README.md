@@ -37,7 +37,7 @@ available flags:
 
 - `-e, --extension`: Specify extensions to watch (default: none).
 
-- `-i, --ignore`: Specify files or sub-directories to ignore (default: `.git` and `.idea` files).
+- `-i, --ignore`: Specify files or sub-directories to ignore (default: `.git` and `.idea` directories).
 
 - `-c, --command`: Specify the command to run and restart on file change.
 
