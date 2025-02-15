@@ -23,12 +23,12 @@ To install Run, follow these steps:
 3. Build and install the application:
 
    ```bash
-   go install
+   go install ./cmd/run
    ```
 
 ## Usage
 
-Peep offers various flags to tailor the monitoring behavior and execution of commands. Here are the
+Run offers various flags to tailor the monitoring behavior and execution of commands. Here are the
 available flags:
 
 - `-v, --verbose`: Show additional information about command execution.
@@ -39,7 +39,7 @@ available flags:
 
 - `-i, --ignore`: Specify files or sub-directories to ignore (default: .git).
 
-- `-r, --run`: Specify the command to run and restart on file change.
+- `-c, --command`: Specify the command to run and restart on file change.
 
 ### Examples
 
@@ -62,31 +62,8 @@ run \
   -i ".git",".idea","bin"
 ```
 
-Note that you can specify multiple directories and commands to run. Peep will run the commands in
+Note that you can specify multiple directories and commands to run. Run will execute the commands in
 the order they are specified.
-
-### Configuration
-
-> Note: The configuration file feature is currently not implemented.
-
-You can also use a configuration file to specify the directories and commands to run. The
-configuration file must be named `run.yaml` and placed in the directory you want to monitor. Here's
-an example configuration file:
-
-```yaml
-directories:
-  - .
-  - ../other-module
-extensions:
-  - .go
-ignore:
-  - .git
-  - .idea
-  - bin
-commands:
-  - go build -o bin/server ./cmd/server
-  - bin/server
-```
 
 ## Contributing
 
@@ -95,4 +72,4 @@ mentioned in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## License
 
-Peep is licensed under the [MIT License](LICENSE.md).
+Run is licensed under the [MIT License](LICENSE.md).
