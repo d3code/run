@@ -30,7 +30,7 @@ func GetConfiguration(cmd *cobra.Command) {
 	if command.Verbose {
 		xlog.EnableConsole(xlog.LevelTrace, xlog.CallerShort, prefix, true)
 	} else {
-		xlog.EnableConsole(xlog.LevelInfo, xlog.CallerNone, prefix, true)
+		xlog.EnableConsole(xlog.LevelInfo, xlog.CallerShort, prefix, true)
 	}
 
 	Config = &command

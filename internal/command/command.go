@@ -40,6 +40,6 @@ func ExecuteCommand(build string, errors chan error) {
 	if err != nil {
 		xlog.Errorf("Error starting command [%s]: %v", build, err)
 	} else {
-		xlog.Infof("Command [%s] with PID %v started", build, c.Process.Pid)
+		xlog.Successf("Command [%s] with PID %v started", build, c.Process.Pid)
 	}
 }
